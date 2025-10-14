@@ -1,14 +1,9 @@
-cmake_minimum_required(VERSION 3.14.0)
-project(xic
-    LANGUAGES C
-        DESCRIPTION "XILANG Compilier"
-)
+cmake_minimum_required(VERSION 3.25.0)
+project(xic)
 
-set(CVERSION "-std=c99")
+set(CMAKE_CXX_STANDARD 26)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CVERSION}")
-
-add_executable(${PROJECT_NAME} src/main.c)
+add_executable(${PROJECT_NAME} src/main.cxx)
 
 target_link_libraries(
     ${PROJECT_NAME}
