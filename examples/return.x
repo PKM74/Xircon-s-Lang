@@ -2,4 +2,4 @@
 
 func main() {
     ret 0;
-}
+};

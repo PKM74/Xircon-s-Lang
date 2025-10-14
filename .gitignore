@@ -1,3 +1,5 @@
 .ccls-cache/
 .vscode/
 build/
+test.x
+out.asm
