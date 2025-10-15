@@ -24,6 +24,7 @@ you define something by doing the type of var you want to define then a name the
 
 * `if` is pretty simple its just `if x = y {do this};`
 * `else` if's best friend! simple as `if x = y {}; else {};`
+* `elif` an else if statement (just like `else if () {}` in C or C++)
 * `loop` is a bit more... dangerous. you can loop... well... basically forever if you were to... forget the value... `loop 100 {print "This"}` or `loop {print "This"}` are both valid ways to use loop, one does the same thing 100 times the other does it until your CPU stops CPUing.
 * `while` does something while something is true, for example `while x = 1 {print "This"}` or `while x > 1 {print "This"}`
 
