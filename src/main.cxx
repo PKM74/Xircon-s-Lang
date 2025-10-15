@@ -4,66 +4,15 @@
 #include <optional>
 #include <vector>
 
-//#include "./tokesizer.hxx"
+#include "./tokesizer.hxx"
+#include "./parser.hxx"
+#include "./generator.hxx"
 
-#define version "RD-00002"
+#define version "RD-00004"
 
-#define EXIT_FAILURE 1
-#define EXIT_SUCCESS 0
 
 const char *output_filename = "out.asm";
 
-enum class TokenType {
-    exit,
-    int_lit,
-    semicolon,
-    comment
-};
-
-struct Token {
-    TokenType type;
-    std::optional<std::string> value {};
-};
-
-std::vector<Token> Tokenize(const std::string& str) {
-    std::vector<Token> Tokens;
-
-    std::string buffer {};
-    for (int i = 0; i < str.length(); i++) {
-        char c = str.at(i);
-        if (std::isalpha(c)) {
-            buffer.push_back(c);
-            i++;
-            while (std::isalnum(str.at(i))) {
-                buffer.push_back(str.at(i));
-                i++;
-            }
-            i--;
-
-            if (buffer == "exit") { // return func checkor
-                Tokens.push_back({.type = TokenType::exit});
-                buffer.clear();
-                continue;
-            }
-        } else if (std::isdigit(c)) {
-            buffer.push_back(c);
-            i++;
-            while (std::isdigit(str.at(i))) {
-                buffer.push_back(str.at(i));
-                i++;
-            }
-            i--;
-            Tokens.push_back({.type = TokenType::int_lit, .value = buffer});
-            buffer.clear();
-        } else if (c == ';') { // legit only checks for a semicolon
-            Tokens.push_back({.type = TokenType::semicolon});
-        } else if (std::isspace(c)) {
-            continue;
-        }
-    }
-
-    return Tokens;
-}
 
 std::string Tokens_To_Asm(const std::vector<Token>& Tokens) {
     std::stringstream output;
@@ -96,8 +45,8 @@ int main(int argC, char *argV[]) {
         contents_stream << input.rdbuf();
         contents = contents_stream.str();
     }
-
-    std::vector<Token> Tokens = Tokenize(contents);
+    Tokenizer Tokenizer(std::move(contents));
+    std::vector<Token> Tokens = Tokenizer.Tokenize();
 
     {
         std::fstream file(output_filename, std::ios::out);
