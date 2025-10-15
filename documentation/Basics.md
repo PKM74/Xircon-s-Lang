@@ -2,14 +2,15 @@
 
 A short and relatively detailed list of all the basics of XILANG. Also yes, the name is supposed to be all caps *always* just like older FORTRAN.
 
-## Extremly Basic Functions
+## Extremely Basic Functions
 
 * `ret` then a value (can be a numeral or a string) will return that value
+* `exit` then a value (can ONLY be a numeral) will exit with that return value
 * `func` then a name (ex: `func main() {};`) allows you to define a new function
 * `import` and a filename (either in `""` or `<>` depending on if it is a local file in the dir or a file from the include path, similar to C) allows you to import the functions from another file (ex: `import Example.xh`)
-* `print` then a value will allow to print a character or string to the screen (you can also print any other type of varible)
+* `print` then a value will allow to print a character or string to the screen (you can also print any other type of variable)
 
-## Defining Varibles
+## Defining Variables
 
 you define something by doing the type of var you want to define then a name then an = and the value of it (ex: `float Example = 1.0;`)
 
@@ -38,4 +39,4 @@ func main() {
     ret 0;
 }
 ```
-This small prgram will print `Hello World!` and return 0.
+This small program will print `Hello World!` and return 0.

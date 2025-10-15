@@ -4,6 +4,8 @@
 #include <optional>
 #include <vector>
 
+//#include "./tokesizer.hxx"
+
 #define version "RD-00002"
 
 #define EXIT_FAILURE 1
@@ -12,7 +14,7 @@
 const char *output_filename = "out.asm";
 
 enum class TokenType {
-    ret,
+    exit,
     int_lit,
     semicolon,
     comment
@@ -38,8 +40,8 @@ std::vector<Token> Tokenize(const std::string& str) {
             }
             i--;
 
-            if (buffer == "ret") { // return func checkor
-                Tokens.push_back({.type = TokenType::ret});
+            if (buffer == "exit") { // return func checkor
+                Tokens.push_back({.type = TokenType::exit});
                 buffer.clear();
                 continue;
             }
@@ -53,11 +55,9 @@ std::vector<Token> Tokenize(const std::string& str) {
             i--;
             Tokens.push_back({.type = TokenType::int_lit, .value = buffer});
             buffer.clear();
-        }
-        else if (c == ';') { // legit only checks for a semicolon
+        } else if (c == ';') { // legit only checks for a semicolon
             Tokens.push_back({.type = TokenType::semicolon});
-        }
-        else if (std::isspace(c)) {
+        } else if (std::isspace(c)) {
             continue;
         }
     }
@@ -67,10 +67,10 @@ std::vector<Token> Tokenize(const std::string& str) {
 
 std::string Tokens_To_Asm(const std::vector<Token>& Tokens) {
     std::stringstream output;
-    output << "global _start\nstart:\n";
+    output << "global _start\n_start:\n";
     for (int i = 0; i < Tokens.size(); i++) {
         const Token& Token = Tokens.at(i);
-        if (Token.type == TokenType::ret) {
+        if (Token.type == TokenType::exit) {
             if (i + 1 < Tokens.size() && Tokens.at(i+1).type == TokenType::int_lit) {
                 if (i + 2 < Tokens.size() && Tokens.at(i+2).type == TokenType::semicolon) {
                     output << "    mov rax, 60\n";
@@ -103,6 +103,9 @@ int main(int argC, char *argV[]) {
         std::fstream file(output_filename, std::ios::out);
         file << Tokens_To_Asm(Tokens);
     }
+
+    system("nasm -felf64 out.asm");
+    system("ld -o out out.o");
 
     return EXIT_SUCCESS;
 }
