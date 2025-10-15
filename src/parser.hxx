@@ -24,25 +24,27 @@ class Parser {
     {
     }
 
-    std::optional<node::Expr> parse_expr() {
-        if (Peak().has_value() && Peak().value().type == TokenType::int_lit) {
+    std::optional<node::Expr> Parse_expr() {
+        if (Peek().has_value() && Peek().value().type == TokenType::int_lit) {
             return node::Expr{.int_lit = Consume()};
         } else {
             return {};
         }
     }
 
-    std::optional<node::Exit> parse() {
+    std::optional<node::Exit> Parse() {
         std::optional<node::Exit> exit_node;
-        while(Peak().has_value()) {
-            if (Peak().value().type == TokenType::exit) {
+        while(Peek().has_value()) {
+            if (Peek().value().type == TokenType::exit) {
                 Consume();
-                if (auto node_expr = parse_expr()) {
+                if (auto node_expr = Parse_expr()) {
                     exit_node = node::Exit { .expr = node_expr.value() };
                 } else {
                     std::cerr << "Invalid expression: No Exit Value!" << std::endl;
                     exit(EXIT_FAILURE);
-                } if (!Peak().has_value() || Peak().value().type != TokenType::semicolon) {
+                } if (Peek().has_value() && Peek().value().type == TokenType::semicolon) {
+                    Consume();
+                } else {
                     std::cerr << "Invalid expression: Missing Semicolon!" << std::endl;
                     exit(EXIT_FAILURE);
                 }
@@ -53,7 +55,7 @@ class Parser {
     }
 
     private:
-    [[nodiscard]] inline std::optional<Token> Peak(int ahead = 1) const {
+    [[nodiscard]] inline std::optional<Token> Peek(int ahead = 1) const {
         if (m_index + ahead > m_Tokens.size()) {
             return {};
         } else {

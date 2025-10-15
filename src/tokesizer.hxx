@@ -48,10 +48,10 @@ class Tokenizer {
         inline std::vector<Token> Tokenize() {
             std::vector<Token> Tokens;
             std::string buffer {};
-            while(Peak().has_value()) {
-                if (std::isalpha(Peak().value())) {
+            while(Peek().has_value()) {
+                if (std::isalpha(Peek().value())) {
                     buffer.push_back(Consume());
-                    while (Peak().has_value() && std::isalnum(Peak().value())) {
+                    while (Peek().has_value() && std::isalnum(Peek().value())) {
                         buffer.push_back(Consume());
                     }
                     if (buffer == "exit") {
@@ -62,24 +62,24 @@ class Tokenizer {
                         std::cerr << "Fuck... Something Went Wrong!" << std::endl;
                         exit(EXIT_FAILURE);
                     }
-                } else if (std::isdigit(Peak().value())) {
+                } else if (std::isdigit(Peek().value())) {
                     buffer.push_back(Consume());
-                    while (Peak().has_value() && isdigit(Peak().value())) {
+                    while (Peek().has_value() && isdigit(Peek().value())) {
                         buffer.push_back(Consume());
                     }
                     Tokens.push_back({.type = TokenType::int_lit, .value = buffer});
                     buffer.clear();
                     continue;
-                } else if (Peak().value() == ';') {
+                } else if (Peek().value() == ';') {
                     Consume();
                     Tokens.push_back({.type = TokenType::semicolon});
                     continue;
-                } else if (Peak().value() == '!') { // Completely Ignores Coments
-                    while (Peak().has_value() && Peak().value() != '\n') {
+                } else if (Peek().value() == '!') { // Completely Ignores Coments
+                    while (Peek().has_value() && Peek().value() != '\n') {
                         Consume();
                     }
                     continue;
-                } else if (std::isspace(Peak().value())) {
+                } else if (std::isspace(Peek().value())) {
                     Consume();
                     continue;
                 } else {
@@ -95,7 +95,7 @@ class Tokenizer {
 
     private:
 
-        [[nodiscard]] inline std::optional<char> Peak(int ahead = 1) const {
+        [[nodiscard]] inline std::optional<char> Peek(int ahead = 1) const {
             if (m_index + ahead > m_src.length()) {
                 return {};
             } else {
