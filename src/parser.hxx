@@ -3,63 +3,125 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <variant>
 #include <optional>
 
 #include "tokesizer.hxx"
 
 namespace node  {
-    
-    struct Expr {
+        // Internal Stuff
+    struct ExpressionIntLit {
         Token int_lit;
     };
-    struct Exit {
-        Expr expr;
+
+    struct ExpressionIdentifier {
+        Token identifier;
+    };
+
+    struct Expression {
+        std::variant<node::ExpressionIntLit, node::ExpressionIdentifier> variant;
+    };
+
+        // Still kinda internal stuff i guess...?
+
+    struct StatementExit {
+        node::Expression expression;
+    };
+
+    struct StatementInt {
+        Token identifier;
+        node::Expression expression;
+    };
+
+    struct Statement {
+        std::variant<node::StatementExit, node::StatementInt> variant;
+    };
+
+    // Nuts
+
+    struct Program {
+        std::vector<node::Statement> statements;
     };
 }
 
 class Parser {
     public:
-    inline explicit Parser(std::vector<Token> Tokens):
-        m_Tokens(std::move(Tokens)) 
+    inline explicit Parser(std::vector<Token> Tokens) 
+        : m_Tokens(std::move(Tokens)) 
     {
     }
 
-    std::optional<node::Expr> Parse_expr() {
+    std::optional<node::Expression> Parse_expression() {
         if (Peek().has_value() && Peek().value().type == TokenType::int_lit) {
-            return node::Expr{.int_lit = Consume()};
+            return node::Expression {.variant = node::ExpressionIntLit {.int_lit = Consume()}};
+        } else if (Peek().has_value() && Peek().value().type == TokenType::identifier) {
+            return node::Expression {.variant = node::ExpressionIdentifier {.identifier = Consume()}};
         } else {
             return {};
         }
     }
 
-    std::optional<node::Exit> Parse() {
-        std::optional<node::Exit> exit_node;
-        while(Peek().has_value()) {
-            if (Peek().value().type == TokenType::exit) {
+    std::optional<node::Statement> Parse_statement() {
+        if (Peek().value().type == TokenType::exit) {
+            Consume();
+            node::StatementExit stmt_exit;
+            if (auto node_expr = Parse_expression()) {
+                stmt_exit = {.expression = node_expr.value()};
+            } else {
+                std::cerr << "Invalid expression: No Exit Value!" << std::endl;
+                exit(EXIT_FAILURE);
+            } if (Peek().has_value() && Peek().value().type == TokenType::semicolon) {
                 Consume();
-                if (auto node_expr = Parse_expr()) {
-                    exit_node = node::Exit { .expr = node_expr.value() };
-                } else {
-                    std::cerr << "Invalid expression: No Exit Value!" << std::endl;
-                    exit(EXIT_FAILURE);
-                } if (Peek().has_value() && Peek().value().type == TokenType::semicolon) {
-                    Consume();
-                } else {
-                    std::cerr << "Invalid expression: Missing Semicolon!" << std::endl;
-                    exit(EXIT_FAILURE);
-                }
+            } else {
+                std::cerr << "Expected a Semicolon!" << std::endl;
+                exit(EXIT_FAILURE);
             }
+            return node::Statement{.variant = stmt_exit};
+        } else if (
+            Peek().has_value() && Peek().value().type == TokenType::_int && 
+            Peek(1).has_value() && Peek(1).value().type == TokenType::identifier && 
+            Peek(2).has_value() && Peek(2).value().type == TokenType::equals) {
+            Consume();
+            auto stmt_int = node::StatementInt { .identifier = Consume()};
+            Consume();
+            if (auto expr = Parse_expression()) {
+                stmt_int.expression = expr.value();
+            } else {
+                std::cerr << "Invalid Expression!" << std::endl;
+                exit(EXIT_FAILURE);
+            } if (Peek().has_value() && Peek().value().type == TokenType::semicolon) {
+                Consume();
+            } else {
+                std::cerr << "Expected a Semicolon!" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            return node::Statement { .variant = stmt_int};
+        } else {
+            return {};
         }
-        m_index = 0;
-        return exit_node;
+    }
+
+    std::optional<node::Program> Parse_program() {
+        node::Program prog;
+        while (Peek().has_value()) {
+            if (auto stmt = Parse_statement()) {
+                prog.statements.push_back(stmt.value());
+            } else {
+                std::cerr << "Invalid Statement!" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+        } if (!Peek().has_value()) {
+            return {};
+        }
+        return prog;
     }
 
     private:
-    [[nodiscard]] inline std::optional<Token> Peek(int ahead = 1) const {
-        if (m_index + ahead > m_Tokens.size()) {
+    [[nodiscard]] inline std::optional<Token> Peek(int ahead = 0) const {
+        if (m_index + ahead >= m_Tokens.size()) {
             return {};
         } else {
-            return m_Tokens.at(m_index);
+            return m_Tokens.at(m_index + ahead);
         }
     }    
 
