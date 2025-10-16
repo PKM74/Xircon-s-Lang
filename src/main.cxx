@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "./tokenizer.hxx"
-#include "./parser-new.hxx"
+#include "./parser.hxx"
 #include "./generator.hxx"
 
 #define version "RD-00004"
@@ -30,7 +30,7 @@ int main(int argC, char *argV[]) {
     std::vector<Token> Tokens = Tokenizer.Tokenize();
 
     Parser Parser(std::move(Tokens));
-    std::optional<node::Program> prog = Parser.parse_prog();
+    std::optional<node::Program> prog = Parser.Parse_program();
 
     if (!prog.has_value()) {
         std::cerr << "Invalid Program!" << std::endl;
