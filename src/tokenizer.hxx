@@ -31,8 +31,8 @@ enum class TokenType {
     char_lit,
     boolean_lit,
     semicolon,
-    open_par,
-    close_par,
+    open_paren,
+    close_paren,
     identifier,
     equals
 };
@@ -107,11 +107,11 @@ class Tokenizer {
 
     private:
 
-        [[nodiscard]] inline std::optional<char> Peek(int ahead = 0) const {
-            if (m_index + ahead >= m_src.length()) {
+        [[nodiscard]] inline std::optional<char> Peek(int offset = 0) const {
+            if (m_index + offset >= m_src.length()) {
                 return {};
             } else {
-                return m_src.at(m_index + ahead);
+                return m_src.at(m_index + offset);
             }
         }    
 

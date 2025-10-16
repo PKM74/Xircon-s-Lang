@@ -6,21 +6,21 @@
 #include <variant>
 #include <optional>
 
-#include "tokesizer.hxx"
+#include "tokenizer-new.hxx"
 
 namespace node  {
         // Internal Stuff
-    struct ExpressionIntLit {
-        Token int_lit;
-    };
+struct ExpressionIntLit {
+    Token int_lit;
+};
 
-    struct ExpressionIdentifier {
-        Token identifier;
-    };
+struct ExpressionIdentifier {
+    Token identifier;
+};
 
-    struct Expression {
+struct Expression {
         std::variant<node::ExpressionIntLit, node::ExpressionIdentifier> variant;
-    };
+};
 
         // Still kinda internal stuff i guess...?
 
@@ -37,7 +37,7 @@ namespace node  {
         std::variant<node::StatementExit, node::StatementInt> variant;
     };
 
-    // Nuts
+        // Nuts
 
     struct Program {
         std::vector<node::Statement> statements;
@@ -45,13 +45,13 @@ namespace node  {
 }
 
 class Parser {
-    public:
+public:
     inline explicit Parser(std::vector<Token> Tokens) 
         : m_Tokens(std::move(Tokens)) 
     {
     }
 
-    std::optional<node::Expression> Parse_expression() {
+    std::optional<node::Expression> Parse_expression() { // This is working
         if (Peek().has_value() && Peek().value().type == TokenType::int_lit) {
             return node::Expression {.variant = node::ExpressionIntLit {.int_lit = Consume()}};
         } else if (Peek().has_value() && Peek().value().type == TokenType::identifier) {
@@ -82,7 +82,7 @@ class Parser {
             Peek(1).has_value() && Peek(1).value().type == TokenType::identifier && 
             Peek(2).has_value() && Peek(2).value().type == TokenType::equals) {
             Consume();
-            auto stmt_int = node::StatementInt { .identifier = Consume()};
+            auto stmt_int = node::StatementInt {.identifier = Consume()};
             Consume();
             if (auto expr = Parse_expression()) {
                 stmt_int.expression = expr.value();
@@ -109,25 +109,24 @@ class Parser {
             } else {
                 std::cerr << "Invalid Statement!" << std::endl;
                 exit(EXIT_FAILURE);
-            }
+            } 
         } if (!Peek().has_value()) {
             return {};
         }
         return prog;
     }
 
-    private:
-    [[nodiscard]] inline std::optional<Token> Peek(int ahead = 0) const {
-        if (m_index + ahead >= m_Tokens.size()) {
+private:
+    [[nodiscard]] inline std::optional<Token> Peek(int offset = 0) const {
+        if (m_index + offset >= m_Tokens.size()) {
             return {};
         } else {
-            return m_Tokens.at(m_index + ahead);
+            return m_Tokens.at(m_index + offset);
         }
-    }    
+    }
 
     inline Token Consume() {
         return m_Tokens.at(m_index++);
-
     }
     const std::vector<Token> m_Tokens;
     size_t m_index = 0;
